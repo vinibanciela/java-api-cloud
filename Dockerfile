@@ -1,4 +1,4 @@
-# Etapa de build com Gradle e JDK 21
+# Etapa de build com Gradle e JDK 21 
 FROM gradle:jdk21-graal AS BUILD
 WORKDIR /usr/app
 COPY . .
@@ -8,10 +8,16 @@ RUN gradle build --no-daemon
 
 # Etapa final de execução com JDK enxuto
 FROM openjdk:21-jdk-slim
-WORKDIR /app
+WORKDIR /app 
+
+# Cria usuário sem privilégios administrativos
+RUN useradd -ms /bin/bash appuser
 
 # Copia o .jar gerado (usa wildcard para flexibilidade)
 COPY --from=BUILD /usr/app/build/libs/*.jar app.jar
+
+# Define que a aplicação será executada como usuário comum
+USER appuser
 
 # Expõe a porta da API
 EXPOSE 8080
